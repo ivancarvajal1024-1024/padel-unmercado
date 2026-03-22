@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Comunicación · Torneo Padel UNMERCADO</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:  #1a2e4a;
+  --navy2: #1f3655;
+  --navy3: #243e63;
+  --navy4: #2a4870;
+  --cyan:  #00d4b4;
+  --cyan2: #00f0cc;
+  --lime:  #c2f000;
+  --white: #ffffff;
+  --w70: rgba(255,255,255,.70);
+  --w50: rgba(255,255,255,.50);
+  --w40: rgba(255,255,255,.40);
+  --w15: rgba(255,255,255,.12);
+  --w08: rgba(255,255,255,.06);
+  --line: rgba(255,255,255,.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Barlow', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; font-size: 14px; }
+
+/* ═══════════ HEADER ═══════════ */
+.hdr { background: var(--navy2); border-bottom: 1px solid var(--line); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+.logo-wrap { display: flex; align-items: center; gap: 12px; }
+.logo-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--white); }
+.logo-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.prog-wrap { display: flex; align-items: center; gap: 7px; margin-right: 4px; }
+.prog-lbl { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); letter-spacing: 2px; }
+.prog-pct { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; color: var(--cyan); line-height: 1; }
+.btn-report { background: none; border: 1px solid rgba(194,240,0,.35); color: var(--lime); border-radius: 6px; padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-report:hover { background: rgba(194,240,0,.08); border-color: var(--lime); }
+.btn-add { background: var(--cyan); color: var(--navy); border: none; border-radius: 6px; padding: 8px 16px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.btn-add:hover { background: var(--cyan2); }
+
+/* ═══════════ TABS ═══════════ */
+.nav-tabs { background: var(--navy2); border-bottom: 1px solid var(--line); padding: 0 24px; display: flex; }
+.ntab { padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--w40); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.ntab:hover { color: var(--w70); }
+.ntab.active { color: var(--white); border-bottom-color: var(--cyan); }
+.ntab-count { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--w15); padding: 2px 7px; border-radius: 99px; }
+.ntab.active .ntab-count { background: rgba(0,212,180,.2); color: var(--cyan); }
+
+/* ═══════════ STATS BAR ═══════════ */
+.sbar { background: var(--navy2); border-bottom: 1px solid var(--line); padding: 0 24px; display: flex; overflow-x: auto; }
+.si { padding: 10px 20px; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 86px; }
+.si:first-child { padding-left: 0; }
+.si-n { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+.si-l { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 1.5px; white-space: nowrap; }
+.c-cyan { color: var(--cyan); } .c-lime { color: var(--lime); } .c-amber { color: #f0a030; }
+
+/* ═══════════ TOOLBAR ═══════════ */
+.tbar { background: var(--navy3); border-bottom: 1px solid var(--line); padding: 10px 24px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.flbl { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 2px; }
+.tbar select, .tbar input[type=text] { font-family: 'Barlow', sans-serif; font-size: 12px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy4); color: var(--white); outline: none; height: 32px; }
+.tbar select:focus, .tbar input:focus { border-color: var(--cyan); }
+.tbar input[type=text] { width: 180px; }
+.tbar select option { background: var(--navy2); }
+
+/* ═══════════ VIEW SYSTEM ═══════════ */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ═══════════ BOARD ═══════════ */
+.board { display: flex; overflow-x: auto; padding: 20px 24px; align-items: flex-start; min-height: calc(100vh - 208px); }
+
+/* ═══════════ WEEK COLUMN ═══════════ */
+.wcol { flex: 0 0 278px; background: var(--navy2); border: 1px solid var(--line); border-radius: 10px; margin-right: 14px; display: flex; flex-direction: column; min-height: 240px; transition: border-color .15s, background .15s; }
+.wcol.drag-over { border-color: var(--cyan); background: rgba(0,212,180,.06); }
+.wcol-hdr { padding: 14px 14px 10px; border-bottom: 1px solid var(--line); }
+.ph-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.ph-pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ph-tag { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 1.5px; text-transform: uppercase; }
+.wlbl { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; line-height: 1.1; }
+.wlbl-sub { color: var(--cyan); font-weight: 400; font-size: 14px; }
+.wdates { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); margin-top: 3px; }
+.wcnt { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); margin-top: 6px; }
+.wcnt span { color: var(--cyan); font-weight: 500; }
+.cpbar { height: 2px; background: var(--w08); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.cpbar-fill { height: 100%; background: var(--cyan); border-radius: 2px; transition: width .3s; }
+.witems { padding: 10px; flex: 1; min-height: 60px; }
+.wadd { margin: 0 10px 10px; padding: 8px; border: 1px dashed rgba(255,255,255,.15); border-radius: 6px; background: none; color: var(--w40); font-size: 12px; cursor: pointer; width: calc(100% - 20px); text-align: center; transition: all .15s; font-family: 'Barlow', sans-serif; }
+.wadd:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,180,.06); }
+.empty-col { padding: 24px 10px; text-align: center; color: var(--w40); font-size: 11px; font-family: 'DM Mono', monospace; line-height: 1.6; }
+
+/* ═══════════ CARD ═══════════ */
+.card { background: var(--navy3); border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; margin-bottom: 8px; cursor: grab; transition: border-color .15s; }
+.card:active { cursor: grabbing; }
+.card.dragging { opacity: .35; }
+.card.done { background: rgba(0,212,180,.07); border-color: rgba(0,212,180,.18); }
+.card:hover { border-color: rgba(255,255,255,.22); }
+.card-tipo-banner { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.card-tipo-icon { font-size: 13px; line-height: 1; flex-shrink: 0; }
+.card-tipo-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
+.ctop { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+.cchk { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,.25); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; margin-top: 1px; background: var(--w08); }
+.cchk.on { background: var(--cyan); border-color: var(--cyan); }
+.cchk svg { display: none; } .cchk.on svg { display: block; }
+.ctitle { font-size: 13px; font-weight: 500; line-height: 1.35; flex: 1; color: var(--white); cursor: pointer; }
+.ctitle:hover { color: var(--cyan); }
+.card.done .ctitle { text-decoration: line-through; color: var(--w40); }
+.cacts { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; flex-shrink: 0; }
+.card:hover .cacts { opacity: 1; }
+.cact { width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 4px; background: var(--navy4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--w40); transition: all .15s; padding: 0; }
+.cact:hover { border-color: var(--w40); color: var(--white); }
+.cact.del:hover { border-color: #e05050; color: #e05050; }
+.cmsg { font-size: 11.5px; color: var(--w40); line-height: 1.4; margin-bottom: 7px; font-style: italic; }
+.card-people { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; }
+.cperson { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--w50); }
+.cperson-role { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 1px; width: 62px; flex-shrink: 0; }
+.cperson-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; flex-shrink: 0; }
+.av-resp { background: rgba(0,212,180,.2); color: var(--cyan); }
+.av-apro { background: rgba(194,240,0,.2); color: var(--lime); }
+.ctags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; font-family: 'DM Mono', monospace; }
+.tdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.t-ig  { background: rgba(225,48,108,.18);  color: #f080a0; border: 1px solid rgba(225,48,108,.3); }
+.t-em  { background: rgba(240,112,48,.18);  color: #f0a070; border: 1px solid rgba(240,112,48,.3); }
+.t-wa  { background: rgba(37,162,68,.18);   color: #60d880; border: 1px solid rgba(37,162,68,.3);  }
+.t-alta  { background: rgba(194,240,0,.12); color: var(--lime); border: 1px solid rgba(194,240,0,.25); }
+.t-media { background: rgba(240,160,48,.12); color: #f0b060; border: 1px solid rgba(240,160,48,.25); }
+
+/* ═══════════ INVENTORY ═══════════ */
+.inv-wrap { padding: 20px 24px; }
+.inv-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.inv-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; }
+.inv-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.inv-filters select { font-family: 'Barlow', sans-serif; font-size: 12px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy3); color: var(--white); outline: none; height: 30px; }
+.inv-filters select:focus { border-color: var(--cyan); }
+.inv-filters select option { background: var(--navy2); }
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table thead tr { background: var(--navy3); }
+.inv-table th { padding: 10px 12px; text-align: left; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--w40); text-transform: uppercase; font-weight: 500; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.inv-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 13px; }
+.inv-table tr:hover td { background: var(--w08); }
+.inv-table tr.row-done td { opacity: .45; }
+.inv-table tr.row-done .inv-tcell { text-decoration: line-through; }
+.inv-chk { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,.25); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; background: var(--w08); }
+.inv-chk.on { background: var(--cyan); border-color: var(--cyan); }
+.inv-chk.on svg { display: block; } .inv-chk svg { display: none; }
+.inv-tipo-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .4px; white-space: nowrap; }
+.inv-week-tag { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); white-space: nowrap; }
+.inv-phase-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; flex-shrink: 0; vertical-align: middle; }
+.person-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
+.pc-resp { background: rgba(0,212,180,.12); color: var(--cyan); }
+.pc-apro { background: rgba(194,240,0,.12); color: var(--lime); }
+.inv-chs { display: flex; gap: 4px; flex-wrap: wrap; }
+.inv-group-hdr td { padding: 8px 12px; background: var(--navy3); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--w40); text-transform: uppercase; border-bottom: 1px solid var(--line); }
+.inv-empty { padding: 48px; text-align: center; color: var(--w40); font-family: 'DM Mono', monospace; font-size: 12px; }
+
+/* ═══════════ MODAL BASE ═══════════ */
+.mov { position: fixed; inset: 0; background: rgba(8,18,34,.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; backdrop-filter: blur(4px); }
+.mov.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--navy2); border: 1px solid rgba(0,212,180,.3); border-radius: 12px; width: 100%; max-width: 520px; padding: 28px; transform: translateY(10px); transition: transform .2s; max-height: 90vh; overflow-y: auto; }
+.mov.open .modal { transform: translateY(0); }
+.mhdr { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.macc { width: 4px; height: 24px; background: var(--cyan); border-radius: 2px; flex-shrink: 0; }
+.mtitle { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; }
+.flabel { display: block; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+.finput, .fsel, .ftxt { width: 100%; font-family: 'Barlow', sans-serif; font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--navy3); color: var(--white); outline: none; transition: border-color .15s; }
+.finput:focus, .fsel:focus, .ftxt:focus { border-color: var(--cyan); }
+.finput::placeholder, .ftxt::placeholder { color: var(--w40); }
+.ftxt { min-height: 68px; resize: vertical; }
+.fsel option { background: var(--navy2); }
+.frow { margin-bottom: 14px; }
+.frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.fsection { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.chgrid { display: flex; gap: 8px; flex-wrap: wrap; }
+.chopt { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all .15s; user-select: none; color: var(--w70); background: var(--navy3); }
+.chopt input { display: none; }
+.chopt.sig { border-color: rgba(225,48,108,.6); background: rgba(225,48,108,.12); color: #f080a0; }
+.chopt.sem { border-color: rgba(240,112,48,.6);  background: rgba(240,112,48,.12);  color: #f0a070; }
+.chopt.swa { border-color: rgba(37,162,68,.6);   background: rgba(37,162,68,.12);   color: #60d880; }
+.mfoot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.bcancel { padding: 9px 18px; border: 1px solid var(--line); border-radius: 7px; background: none; color: var(--w70); font-size: 13px; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all .15s; }
+.bcancel:hover { border-color: var(--w40); color: var(--white); }
+.bsave { padding: 9px 22px; border: none; border-radius: 7px; background: var(--cyan); color: var(--navy); font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: background .15s; }
+.bsave:hover { background: var(--cyan2); }
+
+/* ═══════════ DETAIL MODAL ═══════════ */
+.detail-modal { background: var(--navy2); border: 1px solid rgba(0,212,180,.25); border-radius: 12px; width: 100%; max-width: 480px; padding: 0; transform: translateY(10px); transition: transform .2s; overflow: hidden; }
+.mov.open .detail-modal { transform: translateY(0); }
+.dm-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--line); }
+.dm-tipo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.dm-tipo-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: .5px; }
+.dm-pri { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 9px; border-radius: 99px; }
+.dm-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.dm-status.done { background: rgba(0,212,180,.15); color: var(--cyan); }
+.dm-status.pending { background: rgba(255,255,255,.06); color: var(--w40); }
+.dm-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+.dm-week { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); letter-spacing: 1px; }
+.dm-body { padding: 20px 24px; }
+.dm-section { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+.dm-section:first-child { margin-top: 0; }
+.dm-msg { font-size: 14px; font-style: italic; color: var(--w70); line-height: 1.6; background: var(--w08); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--cyan); }
+.dm-desc { font-size: 13px; color: var(--w70); line-height: 1.7; }
+.dm-people { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dm-person { padding: 10px 14px; border-radius: 8px; }
+.dm-person-role { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; opacity: .6; margin-bottom: 4px; }
+.dm-person-name { font-size: 14px; font-weight: 500; }
+.dm-resp-box { background: rgba(0,212,180,.1); border: 1px solid rgba(0,212,180,.2); }
+.dm-resp-box .dm-person-role { color: var(--cyan); }
+.dm-apro-box { background: rgba(194,240,0,.08); border: 1px solid rgba(194,240,0,.2); }
+.dm-apro-box .dm-person-role { color: var(--lime); }
+.dm-chs { display: flex; gap: 6px; flex-wrap: wrap; }
+.dm-footer { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.dm-edit-btn { padding: 8px 18px; background: var(--cyan); color: var(--navy); border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.dm-close-btn { padding: 8px 16px; background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--w70); font-size: 13px; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.dm-close-btn:hover { border-color: var(--w40); color: var(--white); }
+
+/* ═══════════ REPORT MODAL ═══════════ */
+.report-modal { background: var(--navy2); border: 1px solid rgba(194,240,0,.25); border-radius: 12px; width: 100%; max-width: 540px; padding: 28px; transform: translateY(10px); transition: transform .2s; max-height: 92vh; overflow-y: auto; }
+.mov.open .report-modal { transform: translateY(0); }
+.rpt-lbl { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.rpt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.rpt-input { width: 100%; font-family: 'Barlow', sans-serif; font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--navy3); color: var(--white); outline: none; }
+.rpt-input:focus { border-color: var(--cyan); }
+.rpt-check-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.rpt-chk-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; transition: all .15s; }
+.rpt-chk-opt:hover { border-color: var(--cyan); }
+.rpt-chk-opt.sel { border-color: rgba(0,212,180,.4); background: rgba(0,212,180,.05); }
+.rpt-chk-opt input { accent-color: var(--cyan); width: 15px; height: 15px; flex-shrink: 0; }
+.rpt-chk-label { font-size: 13px; font-weight: 500; }
+.rpt-chk-desc { font-size: 11px; color: var(--w40); margin-top: 2px; }
+.rpt-preview { background: var(--navy3); border-radius: 8px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--line); }
+.rpt-preview-title { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.rpt-stat-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.rpt-stat-n { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+.rpt-stat-l { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--w40); letter-spacing: 1px; }
+.nw-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.nw-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--navy3); border-radius: 6px; border-left: 3px solid transparent; }
+.nw-item-label { font-size: 13px; font-weight: 500; }
+.nw-item-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); margin-top: 2px; }
+.nw-item-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--w40); }
+.btn-gen-pdf { width: 100%; padding: 12px; background: var(--lime); color: var(--navy); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: opacity .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-gen-pdf:hover { opacity: .88; }
+
+/* ═══════════ TOAST ═══════════ */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--cyan); color: var(--navy); padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 300; opacity: 0; transform: translateY(8px); transition: all .2s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
+
+/* ═══════════ PRINT / PDF ═══════════ */
+#pdf-output { display: none; }
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { size: A4 landscape; margin: 12mm 14mm; }
+  body { background: #fff !important; color: #111 !important; font-size: 10pt; }
+  .hdr,.nav-tabs,.sbar,.tbar,.board,.view,.toast,.mov { display: none !important; }
+  #pdf-output { display: block !important; }
+  .pdf-page { padding: 0; }
+  .pdf-cover { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 2.5px solid #1a2e4a; }
+  .pdf-cover-left {}
+  .pdf-logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .pdf-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 20pt; font-weight: 700; color: #1a2e4a; }
+  .pdf-report-title { font-family: 'Barlow Condensed', sans-serif; font-size: 26pt; font-weight: 700; color: #1a2e4a; line-height: 1; margin-bottom: 4px; }
+  .pdf-report-sub { font-size: 10pt; color: #666; }
+  .pdf-cover-right { text-align: right; }
+  .pdf-meta-label { font-size: 8pt; color: #999; letter-spacing: 1px; text-transform: uppercase; }
+  .pdf-meta-value { font-size: 11pt; font-weight: 600; color: #1a2e4a; margin-bottom: 8px; }
+  .pdf-stats-row { display: flex; gap: 16px; margin-bottom: 10px; }
+  .pdf-stat { background: #f0f4f8; border-radius: 6px; padding: 8px 14px; text-align: center; }
+  .pdf-stat-n { font-family: 'Barlow Condensed', sans-serif; font-size: 22pt; font-weight: 700; line-height: 1; color: #1a2e4a; }
+  .pdf-stat-n.done-n { color: #00a090; }
+  .pdf-stat-n.pend-n { color: #c07020; }
+  .pdf-stat-n.pct-n  { color: #5a8a00; }
+  .pdf-stat-l { font-size: 7pt; color: #999; letter-spacing: 1px; text-transform: uppercase; }
+  .pdf-pbar-wrap { height: 6px; background: #e0e0e0; border-radius: 3px; margin-bottom: 18px; overflow: hidden; }
+  .pdf-pbar { height: 6px; background: #00d4b4; border-radius: 3px; }
+  .pdf-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 14pt; font-weight: 700; color: #1a2e4a; margin: 14px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .pdf-section-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .pdf-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 14px; }
+  .pdf-table th { background: #1a2e4a !important; color: #fff !important; padding: 7px 10px; font-size: 7pt; letter-spacing: 1px; text-transform: uppercase; text-align: left; font-weight: 600; }
+  .pdf-table td { padding: 7px 10px; border-bottom: 1px solid #e8e4dc; vertical-align: middle; }
+  .pdf-table tr.done-row td { color: #aaa; }
+  .pdf-table tr.done-row .ptitle { text-decoration: line-through; }
+  .pdf-tipo-cell { white-space: nowrap; }
+  .pdf-person { white-space: nowrap; }
+  .pdf-alta-badge { background: #e8f5d0; color: #3a6b1a; padding: 2px 7px; border-radius: 4px; font-size: 8pt; font-weight: 700; }
+  .pdf-media-badge { background: #fff3e0; color: #7c3d0a; padding: 2px 7px; border-radius: 4px; font-size: 8pt; font-weight: 700; }
+  .pdf-done-badge { background: #d0f4ef; color: #007060; padding: 2px 7px; border-radius: 4px; font-size: 8pt; font-weight: 700; }
+  .pdf-pend-badge { background: #f0f0f0; color: #888; padding: 2px 7px; border-radius: 4px; font-size: 8pt; font-weight: 600; }
+  .pdf-next-week-card { background: #f8f6f2; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; border-left: 4px solid #1a2e4a; }
+  .pdf-nw-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .pdf-nw-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12pt; font-weight: 700; color: #1a2e4a; }
+  .pdf-nw-dates { font-size: 8pt; color: #888; }
+  .pdf-nw-item-row { display: flex; gap: 6px; padding: 3px 0; border-bottom: 1px solid #eee; font-size: 9pt; color: #444; }
+  .pdf-nw-item-row:last-child { border-bottom: none; }
+  .pdf-nw-bullet { color: #00a090; font-weight: 700; }
+  .pdf-footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; font-size: 8pt; color: #aaa; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="hdr">
+  <div class="logo-wrap">
+    <svg width="38" height="38" viewBox="0 0 42 42" fill="none">
+      <path d="M21 3 L32 12 L27 12 L27 21 L15 21 L15 14 L21 14 Z" fill="#3d7be8"/>
+      <path d="M3 21 L12 10 L12 16 L21 16 L21 27 L14 27 L14 21 Z" fill="#e040c8"/>
+      <path d="M39 21 L30 32 L30 26 L21 26 L21 15 L28 15 L28 21 Z" fill="#2ec87a"/>
+      <path d="M21 39 L10 30 L16 30 L16 21 L28 21 L28 28 L21 28 Z" fill="#f0a020"/>
+    </svg>
+    <div>
+      <div class="logo-brand">UnMercado</div>
+      <div class="logo-sub">Torneo Padel · Plan de Comunicación</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="prog-wrap">
+      <span class="prog-lbl">PROGRESO</span>
+      <span class="prog-pct" id="hdr-pct">0%</span>
+    </div>
+    <button class="btn-report" onclick="openReportModal()">📄 Informe PDF</button>
+    <button class="btn-add" onclick="openModal(null,null)">+ Nueva pieza</button>
+  </div>
+</header>
+
+<!-- ══════════ TABS ══════════ -->
+<div class="nav-tabs">
+  <div class="ntab active" id="tab-board" onclick="switchView('board')">📋 Tablero <span class="ntab-count" id="tc-board">26</span></div>
+  <div class="ntab" id="tab-inv" onclick="switchView('inv')">📦 Inventario <span class="ntab-count" id="tc-inv">26</span></div>
+</div>
+
+<!-- ══════════ STATS BAR ══════════ -->
+<div class="sbar" id="sbar"></div>
+
+<!-- ══════════ TOOLBAR (board only) ══════════ -->
+<div class="tbar" id="tbar-board">
+  <span class="flbl">Filtrar</span>
+  <input type="text" id="f-search" placeholder="Buscar pieza..." oninput="applyFilters()">
+  <select id="f-ch" onchange="applyFilters()">
+    <option value="">Todos los canales</option>
+    <option value="Instagram">Instagram</option>
+    <option value="Email">Email</option>
+    <option value="WhatsApp">WhatsApp</option>
+  </select>
+  <select id="f-tipo-f" onchange="applyFilters()">
+    <option value="">Todos los tipos</option>
+  </select>
+  <select id="f-pri" onchange="applyFilters()">
+    <option value="">Todas las prioridades</option>
+    <option value="Alta">Alta</option>
+    <option value="Media">Media</option>
+  </select>
+  <select id="f-st" onchange="applyFilters()">
+    <option value="">Todo</option>
+    <option value="pending">Pendientes</option>
+    <option value="done">Completadas</option>
+  </select>
+</div>
+
+<!-- ══════════ BOARD VIEW ══════════ -->
+<div class="view active" id="view-board">
+  <div class="board" id="board"></div>
+</div>
+
+<!-- ══════════ INVENTORY VIEW ══════════ -->
+<div class="view" id="view-inv">
+  <div class="inv-wrap">
+    <div class="inv-header">
+      <div class="inv-title">Inventario completo de piezas</div>
+      <div class="inv-filters">
+        <select id="inv-f-fase" onchange="renderInventory()">
+          <option value="">Todas las fases</option>
+        </select>
+        <select id="inv-f-tipo" onchange="renderInventory()">
+          <option value="">Todos los tipos</option>
+        </select>
+        <select id="inv-f-ch" onchange="renderInventory()">
+          <option value="">Todos los canales</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Email">Email</option>
+          <option value="WhatsApp">WhatsApp</option>
+        </select>
+        <select id="inv-f-resp" onchange="renderInventory()">
+          <option value="">Todos los responsables</option>
+        </select>
+        <select id="inv-f-st" onchange="renderInventory()">
+          <option value="">Todo</option>
+          <option value="pending">Pendientes</option>
+          <option value="done">Completadas</option>
+        </select>
+      </div>
+    </div>
+    <div id="inv-body"></div>
+  </div>
+</div>
+
+<!-- ══════════ EDIT MODAL ══════════ -->
+<div class="mov" id="mov" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mhdr"><div class="macc"></div><div class="mtitle" id="mtitle">Nueva pieza</div></div>
+    <div class="frow"><label class="flabel">Título</label><input class="finput" id="f-title" placeholder="Nombre de la pieza..."></div>
+    <div class="frow"><label class="flabel">Mensaje clave</label><textarea class="ftxt" id="f-msg" placeholder='"El mensaje central de esta pieza..."'></textarea></div>
+    <div class="frow"><label class="flabel">Brief de producción</label><textarea class="ftxt" id="f-desc" placeholder="Instrucciones, referencias, contexto para quien la produce..." style="min-height:72px"></textarea></div>
+    <div class="frow2">
+      <div><label class="flabel">Semana</label><select class="fsel" id="f-week"></select></div>
+      <div><label class="flabel">Prioridad</label><select class="fsel" id="f-pri-sel"><option value="Alta">Alta</option><option value="Media">Media</option></select></div>
+    </div>
+    <div class="frow2">
+      <div>
+        <label class="flabel">Tipo de pieza</label>
+        <select class="fsel" id="f-tipo">
+          <option value="">Seleccionar...</option>
+          <optgroup label="Instagram"><option>IG · Post Feed</option><option>IG · Carrusel</option><option>IG · Reel</option><option>IG · Story</option></optgroup>
+          <optgroup label="Email"><option>Newsletter</option><option>Email directo</option><option>Email + PDF</option></optgroup>
+          <optgroup label="WhatsApp"><option>WA · Mensaje</option><option>WA · Difusión</option></optgroup>
+          <optgroup label="Documentos"><option>Deck PDF</option><option>One-pager</option><option>Dossier</option></optgroup>
+          <optgroup label="Onsite"><option>Onsite · Impreso</option><option>Onsite · Pantalla</option></optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="flabel">Canales</label>
+        <div class="chgrid">
+          <label class="chopt" id="ch-ig"><input type="checkbox" value="Instagram">📷 IG</label>
+          <label class="chopt" id="ch-em"><input type="checkbox" value="Email">✉️ Email</label>
+          <label class="chopt" id="ch-wa"><input type="checkbox" value="WhatsApp">💬 WA</label>
+        </div>
+      </div>
+    </div>
+    <div class="fsection">Responsables</div>
+    <div class="frow2">
+      <div><label class="flabel">Responsable — produce</label><input class="finput" id="f-resp" placeholder="Nombre o iniciales..."></div>
+      <div><label class="flabel">Aprobador — valida</label><input class="finput" id="f-apro" placeholder="Nombre o iniciales..."></div>
+    </div>
+    <div class="mfoot">
+      <button class="bcancel" onclick="closeModal()">Cancelar</button>
+      <button class="bsave" onclick="saveCard()">Guardar pieza</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DETAIL MODAL ══════════ -->
+<div class="mov" id="mov-detail" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal">
+    <div class="dm-header">
+      <div class="dm-tipo-row">
+        <span class="dm-tipo-badge" id="dm-tipo-badge"></span>
+        <span class="dm-pri" id="dm-pri-badge"></span>
+        <span class="dm-status" id="dm-status-badge"></span>
+      </div>
+      <div class="dm-title" id="dm-title"></div>
+      <div class="dm-week" id="dm-week"></div>
+    </div>
+    <div class="dm-body">
+      <div class="dm-section">Mensaje clave</div>
+      <div class="dm-msg" id="dm-msg"></div>
+      <div id="dm-desc-block">
+        <div class="dm-section">Brief de producción</div>
+        <div class="dm-desc" id="dm-desc"></div>
+      </div>
+      <div id="dm-people-block">
+        <div class="dm-section">Responsables</div>
+        <div class="dm-people" id="dm-people"></div>
+      </div>
+      <div class="dm-section">Canales</div>
+      <div class="dm-chs" id="dm-chs"></div>
+    </div>
+    <div class="dm-footer">
+      <button class="dm-close-btn" onclick="closeDetail()">Cerrar</button>
+      <button class="dm-edit-btn" id="dm-edit-btn">Editar pieza</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ REPORT MODAL ══════════ -->
+<div class="mov" id="mov-report" onclick="if(event.target===this)closeReportModal()">
+  <div class="report-modal">
+    <div class="mhdr"><div class="macc" style="background:var(--lime)"></div><div class="mtitle">Generar informe PDF</div></div>
+    <div class="frow">
+      <div class="rpt-lbl">Período del informe</div>
+      <div class="rpt-row">
+        <div><label class="flabel">Desde</label><input type="date" class="rpt-input" id="rpt-from"></div>
+        <div><label class="flabel">Hasta</label><input type="date" class="rpt-input" id="rpt-to"></div>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="rpt-lbl">Qué incluir en el informe</div>
+      <div class="rpt-check-row">
+        <label class="rpt-chk-opt sel" id="rpt-opt-done">
+          <input type="checkbox" id="rpt-inc-done" checked>
+          <div><div class="rpt-chk-label">✅ Piezas completadas</div><div class="rpt-chk-desc">Todo lo que ya está hecho en el período</div></div>
+        </label>
+        <label class="rpt-chk-opt sel" id="rpt-opt-pending">
+          <input type="checkbox" id="rpt-inc-pending" checked>
+          <div><div class="rpt-chk-label">🔄 Piezas pendientes del período</div><div class="rpt-chk-desc">Lo que aún falta producir en las semanas seleccionadas</div></div>
+        </label>
+        <label class="rpt-chk-opt sel" id="rpt-opt-next">
+          <input type="checkbox" id="rpt-inc-next" checked>
+          <div><div class="rpt-chk-label">📅 Próxima semana</div><div class="rpt-chk-desc">Detalle de lo que viene inmediatamente</div></div>
+        </label>
+        <label class="rpt-chk-opt sel" id="rpt-opt-upcoming">
+          <input type="checkbox" id="rpt-inc-upcoming" checked>
+          <div><div class="rpt-chk-label">🗓 Agenda de semanas futuras</div><div class="rpt-chk-desc">Resumen de todo lo que viene en el plan</div></div>
+        </label>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="rpt-lbl">Vista previa</div>
+      <div class="rpt-preview" id="rpt-preview"></div>
+    </div>
+    <div class="frow">
+      <div class="rpt-lbl">Próximas semanas con actividad pendiente</div>
+      <div class="nw-list" id="nw-list"></div>
+    </div>
+    <button class="btn-gen-pdf" onclick="generatePDF()">📄 Generar y descargar PDF</button>
+    <div style="margin-top:10px;text-align:center">
+      <button class="bcancel" onclick="closeReportModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF OUTPUT (screen hidden, printed only) -->
+<div id="pdf-output"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═════════════════════════════════
+   DATA
+═════════════════════════════════ */
+const PH = [
+  {id:'p1', label:'Lanzamiento',      color:'#3d7be8'},
+  {id:'p2', label:'Convocatoria',     color:'#e040c8'},
+  {id:'p3', label:'Social Proof',     color:'#f0a020'},
+  {id:'p4', label:'Cuenta regresiva', color:'#f05030'},
+  {id:'p5', label:'Evento',           color:'#00d4b4'},
+  {id:'p6', label:'Post-evento',      color:'#c2f000'},
+];
+const WK = [
+  {id:'w1',  label:'Semana 1',    sub:'Lanzamiento',    dates:'25–31 Mar', ph:'p1'},
+  {id:'w2',  label:'Semana 2',    sub:'Convocatoria',   dates:'1–7 Abr',   ph:'p2'},
+  {id:'w3',  label:'Semana 3',    sub:'Sponsors',       dates:'8–14 Abr',  ph:'p2'},
+  {id:'w4',  label:'Semana 4',    sub:'Urgencia',       dates:'15–17 Abr', ph:'p2'},
+  {id:'w5',  label:'Semana 5',    sub:'Confirmados',    dates:'18–24 Abr', ph:'p3'},
+  {id:'w6',  label:'Semana 6',    sub:'Venue',          dates:'25 Abr–2 May', ph:'p3'},
+  {id:'w7',  label:'Semana 7',    sub:'Hype',           dates:'3–9 May',   ph:'p4'},
+  {id:'w8',  label:'Semana 8',    sub:'Cuenta final',   dates:'10–14 May', ph:'p4'},
+  {id:'w9',  label:'🎾 Evento',   sub:'',               dates:'15–17 May', ph:'p5'},
+  {id:'w10', label:'Post-evento', sub:'Legado',         dates:'18–31 May', ph:'p6'},
+];
+const WK_DATES = {
+  w1: [new Date(2026,2,25), new Date(2026,2,31)],
+  w2: [new Date(2026,3,1),  new Date(2026,3,7)],
+  w3: [new Date(2026,3,8),  new Date(2026,3,14)],
+  w4: [new Date(2026,3,15), new Date(2026,3,17)],
+  w5: [new Date(2026,3,18), new Date(2026,3,24)],
+  w6: [new Date(2026,3,25), new Date(2026,4,2)],
+  w7: [new Date(2026,4,3),  new Date(2026,4,9)],
+  w8: [new Date(2026,4,10), new Date(2026,4,14)],
+  w9: [new Date(2026,4,15), new Date(2026,4,17)],
+  w10:[new Date(2026,4,18), new Date(2026,4,31)],
+};
+const TIPO_META = {
+  'IG · Post Feed':    {icon:'🖼', color:'#e1306c', bg:'rgba(225,48,108,.15)'},
+  'IG · Carrusel':     {icon:'📑', color:'#e1306c', bg:'rgba(225,48,108,.15)'},
+  'IG · Reel':         {icon:'🎬', color:'#e1306c', bg:'rgba(225,48,108,.15)'},
+  'IG · Story':        {icon:'⭕', color:'#e1306c', bg:'rgba(225,48,108,.15)'},
+  'Newsletter':        {icon:'📨', color:'#f07030', bg:'rgba(240,112,48,.15)'},
+  'Email directo':     {icon:'✉️', color:'#f07030', bg:'rgba(240,112,48,.15)'},
+  'Email + PDF':       {icon:'📎', color:'#f07030', bg:'rgba(240,112,48,.15)'},
+  'WA · Mensaje':      {icon:'💬', color:'#25a244', bg:'rgba(37,162,68,.15)'},
+  'WA · Difusión':     {icon:'📢', color:'#25a244', bg:'rgba(37,162,68,.15)'},
+  'Deck PDF':          {icon:'📊', color:'#8b5cf6', bg:'rgba(139,92,246,.15)'},
+  'One-pager':         {icon:'📄', color:'#8b5cf6', bg:'rgba(139,92,246,.15)'},
+  'Dossier':           {icon:'📋', color:'#8b5cf6', bg:'rgba(139,92,246,.15)'},
+  'Onsite · Impreso':  {icon:'🖨', color:'#f0a020', bg:'rgba(240,160,32,.15)'},
+  'Onsite · Pantalla': {icon:'📺', color:'#f0a020', bg:'rgba(240,160,32,.15)'},
+};
+function TM(t){ return TIPO_META[t] || {icon:'📌', color:'#888', bg:'rgba(136,136,136,.12)'}; }
+
+const DEF = [
+  {id:'i1', week:'w1', title:'Post anuncio oficial', msg:'"El Torneo UNMERCADO es oficial."', desc:'Imagen de alto impacto. Fondo oscuro, texto blanco, acento cyan. Incluir fecha y CTA a inscripción.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i2', week:'w1', title:'Email de lanzamiento', msg:'"Hoy anunciamos algo que esperabas sin saberlo."', desc:'Email a toda la base. Asunto corto e impactante. Cuerpo: presentación del torneo, propuesta de valor, botón de inscripción.', ch:['Email'], tipo:'Email directo', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i3', week:'w1', title:'WA a red de jugadores', msg:'"Es oficial. Inscripciones pronto. Guardá la fecha."', desc:'Difusión a contactos directos de la red de jugadores. Mensaje breve con link a landing.', ch:['WhatsApp'], tipo:'WA · Difusión', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i4', week:'w2', title:'Reel/Carrusel: formato y categorías', msg:'"Así se juega. Plazas limitadas."', desc:'Explicar el formato del torneo en 5-7 slides o reel de 30 seg. Incluir categorías, cantidad de plazas, fechas.', ch:['Instagram'], tipo:'IG · Carrusel', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i5', week:'w2', title:'Email de convocatoria con CTA', msg:'"Inscripciones abiertas. Para los que juegan en serio."', desc:'Email principal de convocatoria. Incluir categorías, precio, fechas y botón de inscripción. Tono aspiracional.', ch:['Email'], tipo:'Newsletter', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i6', week:'w3', title:'Post reveal sponsor principal', msg:'"[Marca] hace posible algo extraordinario."', desc:'Reveal del sponsor principal. Contar la historia de la alianza, no solo mostrar el logo.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i7', week:'w3', title:'Post: qué está en juego (premios)', msg:'"Esto es lo que se disputa."', desc:'Mostrar premios y beneficios de manera aspiracional. Fotografía o composición de los trofeos/premios.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Media', resp:'', apro:'', done:false},
+  {id:'i8', week:'w4', title:'Post urgencia: últimos cupos', msg:'"Quedan X lugares. Sin excepciones."', desc:'Presión de cierre. Mostrar contador de cupos disponibles. Tono urgente pero no desesperado.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i9', week:'w4', title:'Email cierre de convocatoria', msg:'"Último llamado. El torneo arranca con o sin vos."', desc:'Último email de convocatoria. Subject con urgencia. Destacar que es el cierre final de inscripciones.', ch:['Email'], tipo:'Email directo', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i10',week:'w5', title:'Post: participantes confirmados', msg:'"Ya confirmaron. ¿Vos cuándo?"', desc:'Carrusel con foto/nombre de participantes confirmados. Genera FOMO. Puede ser grilla de fotos o cards individuales.', ch:['Instagram'], tipo:'IG · Carrusel', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i11',week:'w5', title:'Post reveal sponsor secundario', msg:'"[Marca] eligió UNMERCADO."', desc:'Mismo formato que el reveal del sponsor principal. Adaptar mensaje a la categoría del sponsor.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i12',week:'w6', title:'Reel: presentación del venue', msg:'"Vas a querer conocer el lugar donde pasa todo."', desc:'Video recorrido del venue. Mostrar canchas, espacios de networking, catering. Tono premium.', ch:['Instagram'], tipo:'IG · Reel', pri:'Media', resp:'', apro:'', done:false},
+  {id:'i13',week:'w6', title:'Email a sponsors: activación', msg:'"Tu marca ya está en el torneo."', desc:'Email a cada sponsor confirmado. Confirmar visibilidad, pedir assets de marca, anticipar presencia en evento.', ch:['Email'], tipo:'Email directo', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i14',week:'w7', title:'Post reveal del bracket / cruces', msg:'"Ya sabés quién es tu rival."', desc:'Revelar el cuadro del torneo. Generar expectativa. Puede ser una infografía animada o un reel con el bracket.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i15',week:'w7', title:'Reel de hype pre-evento', msg:'"Fast cuts. Música. Cero explicaciones."', desc:'Reel de 20-30 segundos con montaje rápido, música impactante. No explicar nada, solo emocionar. Fecha del evento al final.', ch:['Instagram'], tipo:'IG · Reel', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i16',week:'w8', title:'Post "todo listo": venue montado', msg:'"Las canchas esperan. ¿Vos estás listo?"', desc:'Foto del venue montado, listo para el evento. Mostrar detalles: señalética, canchas, backdrop. 48h antes del evento.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i17',week:'w8', title:'Email logística a participantes', msg:'"Horarios, acceso, qué llevar."', desc:'Email con toda la info práctica: horario de cada categoría, cómo llegar, qué traer, contacto de día del evento.', ch:['Email'], tipo:'Newsletter', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i18',week:'w8', title:'WA logística a participantes', msg:'"Mañana arranca. Dirección y horario."', desc:'Mensaje corto el día antes. Link a Google Maps, horario del día, teléfono de contacto.', ch:['WhatsApp'], tipo:'WA · Mensaje', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i19',week:'w9', title:'Stories en tiempo real (3 jornadas)', msg:'"Esto está pasando ahora."', desc:'Cobertura en vivo de los 3 días. Stories espontáneas de partidos, momentos, reacciones. Sin postproducción.', ch:['Instagram'], tipo:'IG · Story', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i20',week:'w9', title:'Reel highlights por jornada (×3)', msg:'"Los mejores momentos del día."', desc:'Cada noche del evento, montar reel de 30 seg con highlights del día. Música + mejores jugadas + momentos de networking.', ch:['Instagram'], tipo:'IG · Reel', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i21',week:'w9', title:'Post podio y premiación', msg:'"Campeones. Primera edición."', desc:'Post oficial con foto del podio. Nombres de ganadores, categorías. Agradecer a todos los participantes.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i22',week:'w10',title:'Reel resumen oficial (60–90 seg)', msg:'"Primera edición. Historia."', desc:'La pieza audiovisual definitiva del evento. Alta producción. Portada del torneo para futuros sponsors. 3-5 días post-evento.', ch:['Instagram'], tipo:'IG · Reel', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i23',week:'w10',title:'Email de cierre a participantes', msg:'"Gracias por estar."', desc:'Email emotivo de cierre. Resumen del evento, fotos destacadas, link a galería completa. Invitar a próxima edición.', ch:['Email'], tipo:'Email directo', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i24',week:'w10',title:'Email + dossier de resultados a sponsors', msg:'"Tu inversión en números e imágenes."', desc:'Email personalizado a cada sponsor con dossier adjunto: métricas de alcance, fotos con su marca, ROI del evento.', ch:['Email'], tipo:'Email + PDF', pri:'Alta', resp:'', apro:'', done:false},
+  {id:'i25',week:'w10',title:'Post "hasta la próxima edición"', msg:'"Nos vemos en 2027."', desc:'Post de cierre y proyección. Semilla para la próxima edición. Tono orgulloso y aspiracional.', ch:['Instagram'], tipo:'IG · Post Feed', pri:'Media', resp:'', apro:'', done:false},
+  {id:'i26',week:'w10',title:'WA galería fotográfica a participantes', msg:'"Tus fotos del torneo."', desc:'Compartir link a galería completa. Personalizar si es posible por categoría. Invitar a tagear en sus redes.', ch:['WhatsApp'], tipo:'WA · Mensaje', pri:'Media', resp:'', apro:'', done:false},
+];
+
+/* ═════════════════════════════════
+   STATE
+═════════════════════════════════ */
+let items = [], fs = {search:'',ch:'',tipo:'',pri:'',st:''}, dragId = null, editId = null, activeView = 'board', detailId = null;
+
+/* ═══════════════════════════════════════
+   SUPABASE CONFIG — reemplazá estos dos valores
+   con los de tu proyecto en supabase.com
+═══════════════════════════════════════ */
+const SUPABASE_URL = 'https://bweppnvjxswsvzudedae.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3ZXBwbnZqeHN3c3Z6dWRlZGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDEzMjAsImV4cCI6MjA4OTcxNzMyMH0.fIKxUHYsLLKYAj_18O65VfHa7230KR6IJUo42IYZ8xQ';
+
+const SB_HEADERS = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation',
+};
+
+async function sbGet(){
+  const r = await fetch(SUPABASE_URL+'/rest/v1/items?order=id', {headers: SB_HEADERS});
+  if(!r.ok) throw new Error('GET failed: '+r.status);
+  return r.json();
+}
+async function sbUpsert(item){
+  const body = JSON.stringify([{
+    id: item.id, week: item.week, title: item.title,
+    msg: item.msg, notes: item.desc||'', tipo: item.tipo,
+    pri: item.pri, ch: item.ch, resp: item.resp||'',
+    apro: item.apro||'', done: item.done,
+    updated_at: new Date().toISOString()
+  }]);
+  const r = await fetch(SUPABASE_URL+'/rest/v1/items', {
+    method:'POST', headers:{...SB_HEADERS, 'Prefer':'resolution=merge-duplicates,return=representation'}, body
+  });
+  if(!r.ok) throw new Error('UPSERT failed: '+r.status);
+  return r.json();
+}
+async function sbDelete(id){
+  const r = await fetch(SUPABASE_URL+'/rest/v1/items?id=eq.'+id, {method:'DELETE', headers: SB_HEADERS});
+  if(!r.ok) throw new Error('DELETE failed: '+r.status);
+}
+async function sbSeedDefaults(){
+  const body = JSON.stringify(DEF.map(it=>({
+    id:it.id, week:it.week, title:it.title, msg:it.msg,
+    notes:it.desc||'', tipo:it.tipo, pri:it.pri, ch:it.ch,
+    resp:it.resp||'', apro:it.apro||'', done:it.done,
+    updated_at: new Date().toISOString()
+  })));
+  await fetch(SUPABASE_URL+'/rest/v1/items', {
+    method:'POST', headers:{...SB_HEADERS,'Prefer':'resolution=ignore-duplicates'}, body
+  });
+}
+
+function showBanner(msg, type='info'){
+  let b = document.getElementById('sb-banner');
+  if(!b){ b=document.createElement('div'); b.id='sb-banner';
+    b.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:500;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:Barlow,sans-serif;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(b); }
+  b.textContent=msg;
+  b.style.background = type==='error' ? '#e05050' : type==='ok' ? '#00d4b4' : '#1f3655';
+  b.style.color = type==='ok' ? '#1a2e4a' : '#fff';
+  b.style.opacity='1';
+  clearTimeout(b._t);
+  b._t=setTimeout(()=>b.style.opacity='0', 3000);
+}
+
+async function load(){
+  showBanner('Cargando datos del equipo...');
+  try {
+    if(SUPABASE_URL === 'TU_SUPABASE_URL'){
+      // Modo demo — sin Supabase configurado
+      items = JSON.parse(JSON.stringify(DEF));
+      items.forEach(it=>{ if(!it.resp)it.resp=''; if(!it.apro)it.apro=''; if(!it.desc)it.desc=''; });
+      showBanner('Modo demo — configurá Supabase para trabajo en equipo', 'info');
+      return;
+    }
+    let rows = await sbGet();
+    if(rows.length === 0){
+      await sbSeedDefaults();
+      rows = await sbGet();
+      showBanner('Base de datos inicializada con las piezas del plan ✓', 'ok');
+    } else {
+      showBanner('Datos cargados ✓', 'ok');
+    }
+    items = rows.map(r=>({
+      id:r.id, week:r.week, title:r.title, msg:r.msg,
+      desc:r.notes||'', tipo:r.tipo||'IG · Post Feed',
+      pri:r.pri, ch:r.ch||[], resp:r.resp||'',
+      apro:r.apro||'', done:r.done||false
+    }));
+  } catch(e){
+    console.error(e);
+    showBanner('Error conectando con Supabase — usando datos locales', 'error');
+    items = JSON.parse(JSON.stringify(DEF));
+    items.forEach(it=>{ if(!it.resp)it.resp=''; if(!it.apro)it.apro=''; if(!it.desc)it.desc=''; });
+  }
+}
+async function save(one){
+  if(SUPABASE_URL === 'TU_SUPABASE_URL') return;
+  try {
+    if(one){ await sbUpsert(one); }
+    else { for(const it of items){ await sbUpsert(it); } }
+  } catch(e){ console.error('save error',e); showBanner('Error guardando — verificá conexión','error'); }
+}
+function uid(){ return 'i' + Date.now() + Math.random().toString(36).slice(2,5); }
+function chColor(c){ return c==='Instagram'?'#e1306c': c==='Email'?'#f07030':'#25a244'; }
+function chCls(c){   return c==='Instagram'?'t-ig':   c==='Email'?'t-em':'t-wa'; }
+function initials(n){ if(!n)return'?'; return n.trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(); }
+function fmtDate(d){ return d.toLocaleDateString('es-DO',{day:'2-digit',month:'long',year:'numeric'}); }
+
+function matchesBoard(it){
+  if(fs.search && !it.title.toLowerCase().includes(fs.search) && !it.msg.toLowerCase().includes(fs.search)) return false;
+  if(fs.ch    && !it.ch.includes(fs.ch))  return false;
+  if(fs.tipo  && it.tipo !== fs.tipo)      return false;
+  if(fs.pri   && it.pri  !== fs.pri)       return false;
+  if(fs.st==='done'    && !it.done)        return false;
+  if(fs.st==='pending' && it.done)         return false;
+  return true;
+}
+function applyFilters(){
+  fs.search = document.getElementById('f-search').value.toLowerCase();
+  fs.ch     = document.getElementById('f-ch').value;
+  fs.tipo   = document.getElementById('f-tipo-f').value;
+  fs.pri    = document.getElementById('f-pri').value;
+  fs.st     = document.getElementById('f-st').value;
+  renderBoard();
+}
+
+function populateSelects(){
+  const tipos = [...new Set(items.map(i=>i.tipo).filter(Boolean))].sort();
+  ['f-tipo-f','inv-f-tipo'].forEach(id=>{
+    const el = document.getElementById(id); if(!el) return;
+    const cur = el.value;
+    el.innerHTML = '<option value="">Todos los tipos</option>' + tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
+    el.value = cur;
+  });
+  document.getElementById('inv-f-fase').innerHTML =
+    '<option value="">Todas las fases</option>' + PH.map(p=>`<option value="${p.id}">${p.label}</option>`).join('');
+  const resps = [...new Set(items.flatMap(i=>[i.resp,i.apro]).filter(Boolean))].sort();
+  document.getElementById('inv-f-resp').innerHTML =
+    '<option value="">Todos los responsables</option>' + resps.map(r=>`<option value="${r}">${r}</option>`).join('');
+}
+
+/* ═════════════════════════════════
+   STATS
+═════════════════════════════════ */
+function renderStats(){
+  const tot = items.length, dn = items.filter(i=>i.done).length, pct = tot ? Math.round(dn/tot*100) : 0;
+  document.getElementById('hdr-pct').textContent = pct + '%';
+  document.getElementById('tc-board').textContent = items.filter(matchesBoard).length;
+  document.getElementById('tc-inv').textContent = tot;
+  document.getElementById('sbar').innerHTML =
+    `<div class="si"><div class="si-n">${tot}</div><div class="si-l">TOTAL</div></div>`+
+    `<div class="si"><div class="si-n c-cyan">${dn}</div><div class="si-l">HECHAS</div></div>`+
+    `<div class="si"><div class="si-n c-amber">${tot-dn}</div><div class="si-l">PENDIENTES</div></div>`+
+    `<div class="si"><div class="si-n c-lime">${pct}%</div><div class="si-l">PROGRESO</div></div>`+
+    `<div class="si"><div class="si-n">${items.filter(i=>i.ch.includes('Instagram')).length}</div><div class="si-l">INSTAGRAM</div></div>`+
+    `<div class="si"><div class="si-n">${items.filter(i=>i.ch.includes('Email')).length}</div><div class="si-l">EMAIL</div></div>`+
+    `<div class="si"><div class="si-n">${items.filter(i=>i.ch.includes('WhatsApp')).length}</div><div class="si-l">WHATSAPP</div></div>`;
+}
+
+/* ═════════════════════════════════
+   CARD
+═════════════════════════════════ */
+function renderCard(it){
+  const m = TM(it.tipo);
+  const chTags = it.ch.map(c=>`<span class="tag ${chCls(c)}"><span class="tdot" style="background:${chColor(c)}"></span>${c}</span>`).join('');
+  const people = (it.resp||it.apro) ? `<div class="card-people">
+    ${it.resp ? `<div class="cperson"><span class="cperson-role">PRODUCE</span><div class="cperson-avatar av-resp">${initials(it.resp)}</div><span>${it.resp}</span></div>` : ''}
+    ${it.apro ? `<div class="cperson"><span class="cperson-role">APRUEBA</span><div class="cperson-avatar av-apro">${initials(it.apro)}</div><span>${it.apro}</span></div>` : ''}
+  </div>` : '';
+  return `<div class="card${it.done?' done':''}" id="card-${it.id}" draggable="true"
+    ondragstart="onDS(event,'${it.id}')" ondragend="onDE()">
+    <div class="card-tipo-banner">
+      <span class="card-tipo-icon">${m.icon}</span>
+      <span class="card-tipo-label" style="color:${m.color}">${it.tipo}</span>
+    </div>
+    <div class="ctop">
+      <div class="cchk${it.done?' on':''}" onclick="toggleDone('${it.id}')">
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3L9 1" stroke="${it.done?'#1a2e4a':'white'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="ctitle" onclick="openDetail('${it.id}')">${it.title}</div>
+      <div class="cacts">
+        <button class="cact" onclick="openModal('${it.id}',null)" title="Editar">✏️</button>
+        <button class="cact del" onclick="deleteCard('${it.id}')" title="Eliminar">✕</button>
+      </div>
+    </div>
+    <div class="cmsg">${it.msg}</div>
+    ${people}
+    <div class="ctags">${chTags}<span class="tag t-${it.pri.toLowerCase()}">${it.pri}</span></div>
+  </div>`;
+}
+
+/* ═════════════════════════════════
+   BOARD
+═════════════════════════════════ */
+function renderBoard(){
+  renderStats(); populateSelects();
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  WK.forEach(w => {
+    const ph  = PH.find(p=>p.id===w.ph);
+    const all = items.filter(i=>i.week===w.id);
+    const vis = all.filter(matchesBoard);
+    const dn  = all.filter(i=>i.done).length;
+    const pct = all.length ? Math.round(dn/all.length*100) : 0;
+    const col = document.createElement('div');
+    col.className = 'wcol'; col.dataset.week = w.id;
+    col.innerHTML = `
+      <div class="wcol-hdr">
+        <div class="ph-row"><div class="ph-pip" style="background:${ph.color}"></div><span class="ph-tag">${ph.label}</span></div>
+        <div class="wlbl">${w.label}${w.sub?` <span class="wlbl-sub">${w.sub}</span>`:''}</div>
+        <div class="wdates">${w.dates}</div>
+        <div class="wcnt"><span>${dn}</span>/${all.length} piezas</div>
+        <div class="cpbar"><div class="cpbar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="witems" id="wi-${w.id}"
+        ondragover="onDO(event,'${w.id}')"
+        ondragleave="onDL(event,'${w.id}')"
+        ondrop="onDP(event,'${w.id}')">
+        ${vis.length ? vis.map(renderCard).join('') : '<div class="empty-col">Sin piezas.<br>Usá el botón de abajo.</div>'}
+      </div>
+      <button class="wadd" onclick="openModal(null,'${w.id}')">+ Agregar pieza</button>`;
+    board.appendChild(col);
+  });
+}
+
+/* ═════════════════════════════════
+   INVENTORY
+═════════════════════════════════ */
+function renderInventory(){
+  const faseF = document.getElementById('inv-f-fase').value;
+  const tipoF = document.getElementById('inv-f-tipo').value;
+  const chF   = document.getElementById('inv-f-ch').value;
+  const respF = document.getElementById('inv-f-resp').value;
+  const stF   = document.getElementById('inv-f-st').value;
+  let filt = items.filter(it => {
+    const wk = WK.find(w=>w.id===it.week);
+    if(faseF && (!wk || wk.ph !== faseF)) return false;
+    if(tipoF && it.tipo !== tipoF) return false;
+    if(chF   && !it.ch.includes(chF)) return false;
+    if(respF && it.resp !== respF && it.apro !== respF) return false;
+    if(stF==='done'    && !it.done) return false;
+    if(stF==='pending' && it.done)  return false;
+    return true;
+  });
+  if(!filt.length){ document.getElementById('inv-body').innerHTML=`<div class="inv-empty">No hay piezas con esos filtros.</div>`; return; }
+  const byPh = {}; PH.forEach(p=>{ byPh[p.id]=[]; });
+  filt.forEach(it=>{ const wk=WK.find(w=>w.id===it.week); const ph=wk?wk.ph:'p1'; if(byPh[ph]) byPh[ph].push(it); });
+  let html = `<table class="inv-table"><thead><tr>
+    <th style="width:28px"></th><th>Pieza</th><th>Tipo</th><th>Semana</th>
+    <th>Canales</th><th>Produce</th><th>Aprueba</th><th>Pri</th><th style="width:52px"></th>
+  </tr></thead><tbody>`;
+  PH.forEach(ph => {
+    const rows = byPh[ph.id]; if(!rows.length) return;
+    html += `<tr class="inv-group-hdr"><td colspan="9"><span class="inv-phase-dot" style="background:${ph.color}"></span>${ph.label}</td></tr>`;
+    rows.forEach(it => {
+      const m  = TM(it.tipo);
+      const wk = WK.find(w=>w.id===it.week);
+      const chT= it.ch.map(c=>`<span class="tag ${chCls(c)}" style="font-size:9px;padding:1px 6px"><span class="tdot" style="background:${chColor(c)}"></span>${c}</span>`).join('');
+      const rc = it.resp ? `<span class="person-chip pc-resp">${it.resp}</span>` : `<span style="color:var(--w40);font-size:11px">—</span>`;
+      const ac = it.apro ? `<span class="person-chip pc-apro">${it.apro}</span>` : `<span style="color:var(--w40);font-size:11px">—</span>`;
+      html += `<tr class="${it.done?'row-done':''}">
+        <td><div class="inv-chk${it.done?' on':''}" onclick="toggleDone('${it.id}')">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3L9 1" stroke="${it.done?'#1a2e4a':'white'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div></td>
+        <td><div class="inv-tcell" style="font-weight:500;color:${it.done?'var(--w40)':'var(--white)'}">${it.title}</div>
+            <div style="font-size:11px;color:var(--w40);font-style:italic;margin-top:2px">${it.msg}</div></td>
+        <td><span class="inv-tipo-badge" style="background:${m.bg};color:${m.color}">${m.icon} ${it.tipo}</span></td>
+        <td><span class="inv-week-tag">${wk?wk.label+(wk.sub?' · '+wk.sub:'')+' · '+wk.dates:'—'}</span></td>
+        <td><div class="inv-chs">${chT}</div></td>
+        <td>${rc}</td><td>${ac}</td>
+        <td><span class="tag t-${it.pri.toLowerCase()}" style="font-size:9px">${it.pri}</span></td>
+        <td style="white-space:nowrap">
+          <button class="cact" onclick="openModal('${it.id}',null)">✏️</button>
+          <button class="cact del" onclick="deleteCard('${it.id}')" style="margin-left:3px">✕</button>
+        </td>
+      </tr>`;
+    });
+  });
+  html += '</tbody></table>';
+  document.getElementById('inv-body').innerHTML = html;
+}
+
+/* ═════════════════════════════════
+   DRAG & DROP
+═════════════════════════════════ */
+function onDS(e,id){ dragId=id; setTimeout(()=>{ const el=document.getElementById('card-'+id); if(el) el.classList.add('dragging'); },0); e.dataTransfer.effectAllowed='move'; }
+function onDE(){ if(dragId){ const el=document.getElementById('card-'+dragId); if(el) el.classList.remove('dragging'); } document.querySelectorAll('.wcol').forEach(c=>c.classList.remove('drag-over')); dragId=null; }
+function onDO(e,wid){ e.preventDefault(); document.querySelectorAll('.wcol').forEach(c=>c.classList.remove('drag-over')); const c=document.querySelector(`[data-week="${wid}"]`); if(c) c.classList.add('drag-over'); }
+function onDL(e,wid){ if(!e.currentTarget.contains(e.relatedTarget)){ const c=document.querySelector(`[data-week="${wid}"]`); if(c) c.classList.remove('drag-over'); } }
+function onDP(e,wid){ e.preventDefault(); if(!dragId) return; const it=items.find(i=>i.id===dragId); if(it&&it.week!==wid){ it.week=wid; save(); showToast('Movida → '+WK.find(w=>w.id===wid)?.label); fullRender(); } document.querySelectorAll('.wcol').forEach(c=>c.classList.remove('drag-over')); }
+
+/* ═════════════════════════════════
+   ACTIONS
+═════════════════════════════════ */
+function toggleDone(id){ const it=items.find(i=>i.id===id); if(it){ it.done=!it.done; save(it); fullRender(); } }
+function deleteCard(id){
+  if(!confirm('¿Eliminar esta pieza?')) return;
+  items=items.filter(i=>i.id!==id);
+  if(SUPABASE_URL !== 'TU_SUPABASE_URL') sbDelete(id).catch(e=>console.error(e));
+  showToast('Pieza eliminada'); fullRender(); populateSelects();
+}
+function fullRender(){ renderBoard(); if(activeView==='inv') renderInventory(); }
+
+/* ═════════════════════════════════
+   VIEW SWITCH
+═════════════════════════════════ */
+function switchView(v){
+  activeView = v;
+  ['board','inv'].forEach(n=>{
+    document.getElementById('view-'+n).classList.toggle('active', n===v);
+    document.getElementById('tab-'+n).classList.toggle('active', n===v);
+  });
+  document.getElementById('tbar-board').style.display = v==='board' ? 'flex' : 'none';
+  if(v==='inv'){ populateSelects(); renderInventory(); }
+}
+
+/* ═════════════════════════════════
+   DETAIL MODAL
+═════════════════════════════════ */
+function openDetail(id){
+  const it = items.find(i=>i.id===id); if(!it) return;
+  detailId = id;
+  const m  = TM(it.tipo);
+  const wk = WK.find(w=>w.id===it.week);
+  document.getElementById('dm-tipo-badge').textContent = m.icon+' '+it.tipo;
+  document.getElementById('dm-tipo-badge').style.cssText = `background:${m.bg};color:${m.color}`;
+  document.getElementById('dm-pri-badge').textContent = it.pri;
+  document.getElementById('dm-pri-badge').style.cssText = `background:${it.pri==='Alta'?'rgba(194,240,0,.12)':'rgba(240,160,48,.12)'};color:${it.pri==='Alta'?'var(--lime)':'#f0b060'}`;
+  const ds = document.getElementById('dm-status-badge');
+  ds.textContent = it.done ? '✓ Completada' : '○ Pendiente';
+  ds.className = 'dm-status ' + (it.done?'done':'pending');
+  document.getElementById('dm-title').textContent = it.title;
+  document.getElementById('dm-week').textContent = wk ? wk.label+(wk.sub?' · '+wk.sub:'')+' · '+wk.dates : '';
+  document.getElementById('dm-msg').textContent = it.msg;
+  const db = document.getElementById('dm-desc-block');
+  db.style.display = it.desc ? '' : 'none';
+  document.getElementById('dm-desc').textContent = it.desc;
+  const pb = document.getElementById('dm-people-block');
+  pb.style.display = (it.resp||it.apro) ? '' : 'none';
+  document.getElementById('dm-people').innerHTML = `
+    ${it.resp ? `<div class="dm-person dm-resp-box"><div class="dm-person-role">Produce</div><div class="dm-person-name">${it.resp}</div></div>` : ''}
+    ${it.apro ? `<div class="dm-person dm-apro-box"><div class="dm-person-role">Aprueba</div><div class="dm-person-name">${it.apro}</div></div>` : ''}`;
+  document.getElementById('dm-chs').innerHTML = it.ch.map(c=>`<span class="tag ${chCls(c)}"><span class="tdot" style="background:${chColor(c)}"></span>${c}</span>`).join('');
+  document.getElementById('dm-edit-btn').onclick = ()=>{ closeDetail(); openModal(id,null); };
+  document.getElementById('mov-detail').classList.add('open');
+}
+function closeDetail(){ document.getElementById('mov-detail').classList.remove('open'); detailId=null; }
+
+/* ═════════════════════════════════
+   EDIT MODAL
+═════════════════════════════════ */
+function openModal(eid, wid){
+  editId = eid;
+  document.getElementById('mtitle').textContent = eid ? 'Editar pieza' : 'Nueva pieza';
+  const ws = document.getElementById('f-week');
+  ws.innerHTML = WK.map(w=>`<option value="${w.id}">${w.label}${w.sub?' · '+w.sub:''} · ${w.dates}</option>`).join('');
+  if(eid){
+    const it = items.find(i=>i.id===eid); if(!it) return;
+    document.getElementById('f-title').value = it.title;
+    document.getElementById('f-msg').value   = it.msg;
+    document.getElementById('f-desc').value  = it.desc||'';
+    document.getElementById('f-tipo').value  = it.tipo||'';
+    document.getElementById('f-pri-sel').value = it.pri;
+    document.getElementById('f-resp').value  = it.resp||'';
+    document.getElementById('f-apro').value  = it.apro||'';
+    ws.value = it.week;
+    setChs(it.ch);
+  } else {
+    ['f-title','f-msg','f-desc','f-resp','f-apro'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-tipo').value = '';
+    document.getElementById('f-pri-sel').value = 'Alta';
+    if(wid) ws.value = wid;
+    setChs([]);
+  }
+  document.getElementById('mov').classList.add('open');
+  setTimeout(()=>document.getElementById('f-title').focus(), 150);
+}
+function setChs(sel){
+  const m = {ig:['Instagram','sig'], em:['Email','sem'], wa:['WhatsApp','swa']};
+  Object.entries(m).forEach(([k,[val,cls]])=>{
+    const el = document.getElementById('ch-'+k);
+    el.className = 'chopt';
+    if(sel.includes(val)) el.classList.add(cls);
+    el.onclick = ev => { ev.preventDefault(); el.classList.toggle(cls); };
+  });
+}
+function getSelChs(){
+  const m = {ig:['Instagram','sig'], em:['Email','sem'], wa:['WhatsApp','swa']};
+  return Object.entries(m).filter(([k,[v,c]])=>document.getElementById('ch-'+k).classList.contains(c)).map(([k,[v]])=>v);
+}
+function closeModal(){ document.getElementById('mov').classList.remove('open'); editId=null; }
+function saveCard(){
+  const title = document.getElementById('f-title').value.trim(); if(!title){ alert('El título es obligatorio.'); return; }
+  const msg  = document.getElementById('f-msg').value.trim()  || '—';
+  const desc = document.getElementById('f-desc').value.trim();
+  const tipo = document.getElementById('f-tipo').value        || 'IG · Post Feed';
+  const pri  = document.getElementById('f-pri-sel').value;
+  const week = document.getElementById('f-week').value;
+  const ch   = getSelChs(); if(!ch.length){ alert('Seleccioná al menos un canal.'); return; }
+  const resp = document.getElementById('f-resp').value.trim();
+  const apro = document.getElementById('f-apro').value.trim();
+  if(editId){
+    const it = items.find(i=>i.id===editId);
+    if(it){ Object.assign(it, {title,msg,desc,tipo,pri,week,ch,resp,apro}); }
+    showToast('Pieza actualizada ✓');
+  } else {
+    items.push({id:uid(),week,title,msg,desc,tipo,pri,ch,resp,apro,done:false});
+    showToast('Pieza agregada ✓');
+  }
+  const changed = items.find(i=>i.id===(editId||items[items.length-1].id));
+  save(changed); closeModal(); fullRender(); populateSelects();
+}
+
+/* ═════════════════════════════════
+   REPORT MODAL
+═════════════════════════════════ */
+function openReportModal(){
+  const today = new Date();
+  const fmt   = d => d.toISOString().slice(0,10);
+  const nw    = new Date(today); nw.setDate(today.getDate()+7);
+  document.getElementById('rpt-from').value = fmt(today);
+  document.getElementById('rpt-to').value   = fmt(nw);
+  ['done','pending','next','upcoming'].forEach(k=>{
+    const opt = document.getElementById('rpt-opt-'+k);
+    const chk = document.getElementById('rpt-inc-'+k);
+    chk.checked = true; opt.classList.add('sel');
+    chk.onchange = ()=>{ opt.classList.toggle('sel',chk.checked); updatePreview(); };
+  });
+  ['rpt-from','rpt-to'].forEach(id=>document.getElementById(id).oninput = updatePreview);
+  updatePreview(); renderNWList();
+  document.getElementById('mov-report').classList.add('open');
+}
+function closeReportModal(){ document.getElementById('mov-report').classList.remove('open'); }
+
+function getReportData(){
+  const from = new Date(document.getElementById('rpt-from').value+'T00:00:00');
+  const to   = new Date(document.getElementById('rpt-to').value+'T23:59:59');
+  const wksInPeriod = WK.filter(w=>{ const d=WK_DATES[w.id]; return d && d[0]<=to && d[1]>=from; }).map(w=>w.id);
+  return {
+    from, to,
+    completed: items.filter(i=> i.done && wksInPeriod.includes(i.week)),
+    pending:   items.filter(i=>!i.done && wksInPeriod.includes(i.week)),
+    total:     items.length,
+    totalDone: items.filter(i=>i.done).length,
+    wksInPeriod,
+  };
+}
+function updatePreview(){
+  const d = getReportData(), pct = d.total ? Math.round(d.totalDone/d.total*100) : 0;
+  document.getElementById('rpt-preview').innerHTML = `
+    <div class="rpt-preview-title">Resumen del período</div>
+    <div class="rpt-stat-row">
+      <div><div class="rpt-stat-n" style="color:var(--cyan)">${d.totalDone}</div><div class="rpt-stat-l">Completadas</div></div>
+      <div><div class="rpt-stat-n" style="color:#f0a030">${d.total-d.totalDone}</div><div class="rpt-stat-l">Pendientes</div></div>
+      <div><div class="rpt-stat-n" style="color:var(--lime)">${pct}%</div><div class="rpt-stat-l">Avance</div></div>
+      <div><div class="rpt-stat-n">${d.wksInPeriod.length}</div><div class="rpt-stat-l">Semanas</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--w40);margin-top:8px;font-family:monospace">
+      Semanas: ${d.wksInPeriod.map(id=>WK.find(w=>w.id===id)?.label).join(', ')||'ninguna'}
+    </div>`;
+}
+function renderNWList(){
+  const today = new Date();
+  const fut = WK.filter(w=>{ const d=WK_DATES[w.id]; return d&&d[0]>today; }).slice(0,5);
+  document.getElementById('nw-list').innerHTML = fut.map(w=>{
+    const ph = PH.find(p=>p.id===w.ph);
+    const wI = items.filter(i=>i.week===w.id);
+    return `<div class="nw-item" style="border-left-color:${ph.color}">
+      <div><div class="nw-item-label">${w.label}${w.sub?' · '+w.sub:''}</div><div class="nw-item-sub">${w.dates}</div></div>
+      <div class="nw-item-count">${wI.filter(i=>i.done).length}/${wI.length} hechas</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═════════════════════════════════
+   PDF GENERATION
+═════════════════════════════════ */
+function generatePDF(){
+  const d = getReportData();
+  const incDone     = document.getElementById('rpt-inc-done').checked;
+  const incPending  = document.getElementById('rpt-inc-pending').checked;
+  const incNext     = document.getElementById('rpt-inc-next').checked;
+  const incUpcoming = document.getElementById('rpt-inc-upcoming').checked;
+  const pct    = d.total ? Math.round(d.totalDone/d.total*100) : 0;
+  const today  = new Date();
+  const futWks = WK.filter(w=>{ const wd=WK_DATES[w.id]; return wd&&wd[0]>today; });
+  const nextWk = futWks[0];
+
+  const TD = 'padding:8px 10px;border-bottom:1px solid #e8e4dc;vertical-align:middle;font-size:10pt;color:#111';
+  const TH = 'background:#1a2e4a;color:#fff;padding:8px 10px;text-align:left;font-size:8pt;letter-spacing:1px;text-transform:uppercase;font-weight:600';
+
+  function row(it, showStatus){
+    const m  = TM(it.tipo);
+    const wk = WK.find(w=>w.id===it.week);
+    const op = it.done ? 'opacity:.45;' : '';
+    const td = TD+';'+op;
+    const strike = it.done ? 'text-decoration:line-through;' : '';
+    return '<tr>'
+      +'<td style="'+td+';font-weight:600;'+strike+'">'+it.title+'</td>'
+      +'<td style="'+td+';color:'+m.color+';white-space:nowrap">'+m.icon+' '+it.tipo+'</td>'
+      +'<td style="'+td+';font-size:8.5pt;color:#666;white-space:nowrap">'+(wk?wk.label+' · '+wk.dates:'—')+'</td>'
+      +'<td style="'+td+';white-space:nowrap">'+(it.resp||'—')+'</td>'
+      +'<td style="'+td+';white-space:nowrap">'+(it.apro||'—')+'</td>'
+      +'<td style="'+td+'">'+(it.pri==='Alta'
+        ?'<span style="background:#e8f5d0;color:#3a6b1a;padding:2px 8px;border-radius:4px;font-size:8pt;font-weight:700">Alta</span>'
+        :'<span style="background:#fff3e0;color:#7c3d0a;padding:2px 8px;border-radius:4px;font-size:8pt;font-weight:700">Media</span>')+'</td>'
+      +(showStatus?'<td style="'+td+'">'+(it.done
+        ?'<span style="background:#d0f4ef;color:#007060;padding:2px 7px;border-radius:4px;font-size:8pt;font-weight:700">HECHA</span>'
+        :'<span style="background:#f0f0f0;color:#888;padding:2px 7px;border-radius:4px;font-size:8pt">PENDIENTE</span>')+'</td>':'')
+      +'</tr>';
+  }
+
+  function tbl(cols, rows, showStatus){
+    return '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:10pt">'
+      +'<thead><tr>'+cols.map(c=>'<th style="'+TH+'">'+c+'</th>').join('')+'</tr></thead>'
+      +'<tbody>'+rows.map(it=>row(it,showStatus)).join('')+'</tbody>'
+      +'</table>';
+  }
+
+  function sec(label, color, count){
+    return '<div style="display:flex;align-items:center;gap:8px;margin:22px 0 9px">'
+      +'<span style="width:9px;height:9px;border-radius:50%;background:'+color+';display:inline-block;flex-shrink:0"></span>'
+      +'<span style="font-size:13pt;font-weight:700;color:#1a2e4a">'+label+(count?' <span style="font-weight:400;font-size:10pt;color:#888">('+count+')</span>':'')+'</span>'
+      +'</div>';
+  }
+
+  let body = '<div style="font-family:Arial,sans-serif;color:#111;padding:32px 40px;background:#fff">'
+    // COVER
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;margin-bottom:22px;border-bottom:3px solid #1a2e4a">'
+      +'<div>'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+          +'<svg width="34" height="34" viewBox="0 0 42 42" fill="none">'
+            +'<path d="M21 3 L32 12 L27 12 L27 21 L15 21 L15 14 L21 14 Z" fill="#3d7be8"/>'
+            +'<path d="M3 21 L12 10 L12 16 L21 16 L21 27 L14 27 L14 21 Z" fill="#e040c8"/>'
+            +'<path d="M39 21 L30 32 L30 26 L21 26 L21 15 L28 15 L28 21 Z" fill="#2ec87a"/>'
+            +'<path d="M21 39 L10 30 L16 30 L16 21 L28 21 L28 28 L21 28 Z" fill="#f0a020"/>'
+          +'</svg>'
+          +'<span style="font-size:22pt;font-weight:700;color:#1a2e4a;letter-spacing:-.5px">UnMercado</span>'
+        +'</div>'
+        +'<div style="font-size:26pt;font-weight:700;color:#1a2e4a;line-height:1;margin-bottom:5px">Informe de avance</div>'
+        +'<div style="font-size:10.5pt;color:#666">Torneo Padel UNMERCADO · Plan de Comunicación Estratégica 2026</div>'
+      +'</div>'
+      +'<div style="text-align:right;padding-top:6px">'
+        +'<div style="font-size:8pt;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Período</div>'
+        +'<div style="font-size:12pt;font-weight:600;color:#1a2e4a;margin-bottom:10px">'+fmtDate(d.from)+' — '+fmtDate(d.to)+'</div>'
+        +'<div style="font-size:8pt;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Generado</div>'
+        +'<div style="font-size:12pt;font-weight:600;color:#1a2e4a">'+fmtDate(today)+'</div>'
+      +'</div>'
+    +'</div>'
+    // STATS ROW
+    +'<div style="display:flex;gap:14px;margin-bottom:12px">'
+      +[{n:d.total,l:'Total piezas',c:'#1a2e4a'},
+        {n:d.totalDone,l:'Completadas',c:'#00a090'},
+        {n:d.total-d.totalDone,l:'Pendientes',c:'#c07020'},
+        {n:pct+'%',l:'Avance global',c:'#5a8a00'}]
+       .map(s=>'<div style="background:#f0f4f8;border-radius:7px;padding:10px 16px;text-align:center;flex:1">'
+         +'<div style="font-size:24pt;font-weight:700;line-height:1;color:'+s.c+'">'+s.n+'</div>'
+         +'<div style="font-size:7.5pt;color:#999;letter-spacing:1px;text-transform:uppercase;margin-top:3px">'+s.l+'</div>'
+         +'</div>').join('')
+    +'</div>'
+    // PROGRESS BAR
+    +'<div style="height:7px;background:#e0e0e0;border-radius:4px;margin-bottom:22px;overflow:hidden">'
+      +'<div style="height:7px;background:#00d4b4;border-radius:4px;width:'+pct+'%"></div>'
+    +'</div>';
+
+  if(incDone && d.completed.length){
+    body += sec('Completadas','#00d4b4',d.completed.length);
+    body += tbl(['Pieza','Tipo','Semana','Produce','Aprueba','Prioridad'],d.completed,false);
+  }
+  if(incPending && d.pending.length){
+    body += sec('Pendientes en el período','#f0a020',d.pending.length);
+    body += tbl(['Pieza','Tipo','Semana','Produce','Aprueba','Prioridad','Estado'],d.pending,true);
+  }
+  if(incNext && nextWk){
+    const ph  = PH.find(p=>p.id===nextWk.ph);
+    const nwI = items.filter(i=>i.week===nextWk.id);
+    body += sec('Próxima semana: '+nextWk.label+(nextWk.sub?' · '+nextWk.sub:'')+' · '+nextWk.dates, ph.color);
+    body += tbl(['Pieza','Tipo','Semana','Produce','Aprueba','Prioridad','Estado'],nwI,true);
+  }
+  if(incUpcoming && futWks.length>1){
+    body += sec('Agenda de semanas futuras','#c2f000');
+    futWks.slice(1,6).forEach(w=>{
+      const ph   = PH.find(p=>p.id===w.ph);
+      const wI   = items.filter(i=>i.week===w.id);
+      const pndI = wI.filter(i=>!i.done);
+      body += '<div style="background:#f8f6f2;border-radius:7px;padding:11px 15px;margin-bottom:9px;border-left:4px solid '+ph.color+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'
+          +'<div style="font-size:12pt;font-weight:700;color:'+ph.color+'">'+w.label+(w.sub?' · '+w.sub:'')+'</div>'
+          +'<div style="font-size:8.5pt;color:#888">'+w.dates+' · '+wI.filter(i=>i.done).length+'/'+wI.length+' hechas</div>'
+        +'</div>'
+        +pndI.slice(0,5).map(it=>{const m=TM(it.tipo);
+          return '<div style="display:flex;gap:7px;padding:4px 0;border-bottom:1px solid #eee;font-size:9pt;color:#444;align-items:baseline">'
+            +'<span style="color:#00a090;font-weight:700;flex-shrink:0">→</span>'
+            +'<span style="color:'+m.color+';flex-shrink:0">'+m.icon+'</span>'
+            +'<span>'+it.title+(it.resp?' <span style="color:#999;font-size:8pt">('+it.resp+')</span>':'')+'</span>'
+            +'</div>';}).join('')
+        +(pndI.length>5?'<div style="color:#aaa;font-size:8pt;padding:4px 0">+'+(pndI.length-5)+' más...</div>':'')
+        +'</div>';
+    });
+  }
+
+  body += '<div style="margin-top:28px;padding-top:11px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:8pt;color:#aaa;font-family:monospace">'
+    +'<span>UnMercado · Plan de Comunicación Torneo Padel 2026</span>'
+    +'<span>Generado el '+fmtDate(today)+'</span>'
+    +'</div></div>';
+
+  // Wrap in a full printable HTML document
+  const fullHTML = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Informe Padel UNMERCADO</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#fff;color:#111;font-family:Arial,sans-serif}
+  @media print{
+    @page{size:A4 landscape;margin:10mm 12mm}
+    body{font-size:10pt}
+    .page-break{page-break-before:always}
+  }
+  @media screen{
+    body{max-width:960px;margin:0 auto;padding:20px;background:#f5f5f5}
+    .print-hint{background:#1a2e4a;color:#fff;padding:14px 24px;border-radius:8px;margin-bottom:20px;
+      font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .print-hint button{background:#00d4b4;color:#1a2e4a;border:none;border-radius:6px;padding:8px 18px;
+      font-size:13px;font-weight:700;cursor:pointer}
+    .doc-wrap{background:#fff;box-shadow:0 2px 20px rgba(0,0,0,.1);border-radius:8px;overflow:hidden}
+  }
+</style>
+</head><body>
+<div class="print-hint">
+  <span>📄 Tu informe está listo. Hacé clic en "Imprimir / Guardar PDF" para descargarlo.</span>
+  <button onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+</div>
+<div class="doc-wrap">${body}</div>
+</body></html>`;
+
+  // Download as HTML file
+  const blob = new Blob([fullHTML], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'informe_padel_unmercado_'+new Date().toISOString().slice(0,10)+'.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  closeReportModal();
+  showToast('Informe descargado ✓ — Abrilo y usá Ctrl+P para PDF');
+}
+/* ═════════════════════════════════
+   TOAST
+═════════════════════════════════ */
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ═════════════════════════════════
+   INIT
+═════════════════════════════════ */
+load().then(()=>fullRender());
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){ closeModal(); closeDetail(); closeReportModal(); }
+});
+</script>
+</body>
+</html>
